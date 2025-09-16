@@ -1,0 +1,131 @@
+<!doctype html>
+
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Casa comigo? 💍</title>
+  <style>
+    :root{--bg:#fff0f6;--accent:#ff6b93;--green:#28c76f;--red:#ff4d4f}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(135deg,var(--bg),#fffaf0);display:flex;align-items:center;justify-content:center}
+    .card{width:92vw;max-width:720px;background:rgba(255,255,255,0.9);backdrop-filter:blur(6px);padding:28px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,0.08);text-align:center}
+    h1{margin:0 0 8px;font-size:28px;color:#3a2a2a}
+    p.lead{margin:0 0 22px;color:#6b5760}
+    .buttons{position:relative;height:220px;display:flex;align-items:center;justify-content:center}
+    button.btn{padding:16px 22px;border-radius:12px;border:0;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+    button.green{background:linear-gradient(180deg,var(--green),#13a65a);color:white;margin-right:18px}
+    button.red{position:absolute;background:linear-gradient(180deg,var(--red),#d8363a);color:white}
+    .screen{display:none}
+    .screen.active{display:block}
+    .married{font-size:20px;padding:26px}
+    .insult{color:#a11;font-size:22px;padding:26px}
+    .small{font-size:12px;color:#7a6b6f;margin-top:10px}
+    .footer{margin-top:16px}
+    a.reset{display:inline-block;margin-top:14px;padding:10px 14px;border-radius:10px;background:#fff;border:1px solid #eee}
+    /* cute hearts */
+    .hearts{position:fixed;left:-60px;top:-40px;pointer-events:none;opacity:.6}
+    svg{width:180px;height:180px}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="screen-main" class="screen active">
+      <h1>Casa comigo? 💍</h1>
+      <p class="lead">Eu sei que a gente tem drama, mas ando pensando em nós... responde com o coração ❤️</p>
+      <div class="buttons" id="buttonsWrap">
+        <button id="yesBtn" class="btn green">Sim, te amo 😍</button>
+        <button id="noBtn" class="btn red">Não seu arrombado 🤬🖕</button>
+      </div>
+      <div class="small">(Se apertar o Não, ele vai correr — tenta pegar se tiver coragem)</div>
+    </div><div id="screen-married" class="screen">
+  <div class="married">Tamo casado ent 🤝<br><small>.</small>
+    <div class="footer"><a class="reset" href="#" id="restart1">Voltar</a></div>
+  </div>
+</div>
+
+<div id="screen-insult" class="screen">
+  <div class="insult">ent vai se foder mocréia</div>
+  <div class="footer"><a class="reset" href="#" id="restart2">Tenta de novo (se for corajosa)</a></div>
+</div>
+
+  </div>  <!-- decorative hearts -->  <div class="hearts" aria-hidden="true">
+    <svg viewBox="0 0 120 120"><path d="M60 108s-40-24-52-40S6 30 36 24c18-4 24 10 24 10s6-14 24-10c30 6 28 44 28 44s-10 32-60 50z" fill="#ffd1e6"/></svg>
+  </div>  <script>
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const wrap = document.getElementById('buttonsWrap');
+    const screenMain = document.getElementById('screen-main');
+    const screenMarried = document.getElementById('screen-married');
+    const screenInsult = document.getElementById('screen-insult');
+    const restart1 = document.getElementById('restart1');
+    const restart2 = document.getElementById('restart2');
+
+    let attempts = 0;
+    const MAX_ATTEMPTS = 7000;
+
+    function showScreen(screen){
+      [screenMain, screenMarried, screenInsult].forEach(s => s.classList.remove('active'));
+      screen.classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    yesBtn.addEventListener('click', ()=>{
+      showScreen(screenMarried);
+    });
+
+    // utility: random position inside wrap
+    function moveNoBtn(){
+      const pad = 8;
+      const wrapRect = wrap.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      const maxX = wrapRect.width - btnRect.width - pad;
+      const maxY = wrapRect.height - btnRect.height - pad;
+      const x = Math.max(0, Math.floor(Math.random() * (maxX+1)));
+      const y = Math.max(0, Math.floor(Math.random() * (maxY+1)));
+      noBtn.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    // When mouse enters or touch starts near the No button, move it and count as an attempt
+    function registerAttempt(){
+      attempts++;
+      if(attempts >= MAX_ATTEMPTS){
+        // secret punishment screen
+        showScreen(screenInsult);
+        attempts = 0; // reset
+      }
+    }
+
+    // move when hovered
+    noBtn.addEventListener('mouseenter', ()=>{
+      registerAttempt();
+      moveNoBtn();
+    });
+
+    // support touch (mobile). touchstart will trigger before click; move away
+    noBtn.addEventListener('touchstart', (e)=>{
+      e.preventDefault(); // prevent accidental click
+      registerAttempt();
+      moveNoBtn();
+    },{passive:false});
+
+    // if user somehow manages to click it, count and move
+    noBtn.addEventListener('click',(e)=>{
+      e.preventDefault();
+      registerAttempt();
+      moveNoBtn();
+    });
+
+    // small evasive behavior: if window resizes, put the button back to center
+    window.addEventListener('resize', ()=>{ noBtn.style.transform='translate(0,0)'; });
+
+    // restarts
+    restart1.addEventListener('click',(e)=>{ e.preventDefault(); showScreen(screenMain); attempts=0; noBtn.style.transform='translate(0,0)'; });
+    restart2.addEventListener('click',(e)=>{ e.preventDefault(); showScreen(screenMain); attempts=0; noBtn.style.transform='translate(0,0)'; });
+
+    // small friendly tip: center the red button initially
+    noBtn.style.transform='translate(40px,0)';
+  </script></body>
+</html>
